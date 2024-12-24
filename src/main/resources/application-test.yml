@@ -1,0 +1,32 @@
+spring:
+  database:
+    # 1. jdbc:2:mem:testdb : h2 인-메모리 데이터베이스를 의미합니다.
+    # 2. DB_CLOSE_DELAY=-1 : 테스트중 데이터베이스가 닫히지 않도록 설정
+    # 3. AUTO_SERVER : 테스트환경에서 동시 연결 활성화
+    #
+    # 4. LOCK_MODE : H2에서 Lock 을 활성화하여 동시성 테스트를 Mysql 과 비슷하게 동작하도록한다.
+    #     - LOCK_MODE =0 : 락을 사용하지 않음 (기본값)
+    #     - LOCK_MODE =3 : 테이블 및 레코드 수준의 락을 지원
+    #
+    # 5. MULTI_THREAD = FALSE
+    #     - H2 기본 동작은 성능을 우선으로 하기때문에 테스트결과가 실제 Mysql 환경과 다를 수 있다.
+    #     - MULTI_THREAD = FALSE 를 설정하면 Mysql 과 비슷한 동작을 나타낸다.
+    url: jdbc:2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MYSQL;AUTO_SERVER=TRUE;LOCK_MODE=3;MULTI_THREAD=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      # 테스트 실행시마다 데이터베이스 스키마를 생성하고 삭제한다.
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        # Hibernate 가 H2 SQL 문법을 이해하도록 설정
+        dialect: org.hibernate.dialect.H2Dialect
+        jdbc.time_zone: UTC
+
+  # 트랜잭션 격리 수준 설정
+  transaction:
+    # SERIALIZABLE: 가장 높은 수준의 트랜잭션 격리. 동시에 실행되는 트랜잭션이 완벽히 분리.
+    # READ_COMMITED: 커밋된 데이터만 읽을 수 있음. 일반적인 동시성 테스트에 적합
+    isolation-level: SERIALIZABLE

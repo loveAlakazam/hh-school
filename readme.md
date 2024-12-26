@@ -46,21 +46,21 @@ classDiagram
   /src
   /users(회원)
   |	/presentation
-  |	|	ㄴUserController.java
-  |   |   ㄴ/dtos
-  |   |   |   ㄴ요청/응답 dto들
-  |   |   ㄴ/exceptionHandlers
-  |   |       ㄴ  커스텀예외 핸들러들
+  |	|    ㄴUserController.java
+  |     |    ㄴ/dtos
+  |     |    |     ㄴ요청/응답 dto들
+  |     |     ㄴ/exceptionHandlers
+  |     |          ㄴ  커스텀예외 핸들러들
   |	|	
   |	/domain
-  |   |   ㄴ/exceptions
-          |   ㄴ커스텀예외들
-  |   |   ㄴ/services  
-  |   |   |   ㄴ<I>UserService.java
-  |   |   |   ㄴUserServiceImpl.java
-  |   |   ㄴ<I>UserRepository.java
-  |   |   ㄴUser.java
-  |   |
+  |     |   ㄴ/exceptions
+  |     |   |   ㄴ커스텀예외들
+  |     |   ㄴ/services  
+  |     |   |   ㄴ<I>UserService.java
+  |     |   |   ㄴUserServiceImpl.java
+  |     |   ㄴ<I>UserRepository.java
+  |     |   ㄴUser.java
+  |     |
   |	|	
   |	|  
   |	/infraStructure
@@ -68,7 +68,7 @@ classDiagram
   |		|	ㄴUserMapper.java
   |		/dataSources
   |	  	    ㄴRepositoryImpl.java
-  |	        ㄴ<I>ORMRepository.java
+  |	            ㄴ<I>ORMRepository.java
   |		
   |			
   /courses(강좌)

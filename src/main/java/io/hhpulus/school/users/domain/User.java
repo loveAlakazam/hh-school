@@ -38,7 +38,10 @@ public class User extends BaseEntity {
     }
 
     // setter
-    // id는 고유값이기 때문에 setter 을 제외했습니다.
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public void setName(String name) {
         this.name = name;
     }

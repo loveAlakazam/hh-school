@@ -63,7 +63,6 @@ public interface CourseValidator {
     }
 
     static void checkEnrollStartDate(LocalDate enrollStartDate) throws IllegalArgumentException {
-
         // 수강신청시작날짜는 null 을 허용하지 않는다.
         if (enrollStartDate == null) {
             throw new IllegalArgumentException(ENROLL_START_DATE_IS_NOT_NULL);

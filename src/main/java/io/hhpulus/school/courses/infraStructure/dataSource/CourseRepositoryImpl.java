@@ -54,6 +54,4 @@ public class CourseRepositoryImpl implements CourseRepository {
         PageRequest pageRequest = PageRequest.of(page, DEFAULT_PAGINATION_SIZE);
         return courseORMRepository.findEnableEnrollCourses(currentDate, pageRequest).map(CourseMapper::toResponseDto);
     }
-
-
 }

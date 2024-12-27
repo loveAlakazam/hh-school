@@ -1,6 +1,6 @@
 package io.hhpulus.school.courses.presentation.controller;
 
-import io.hhpulus.school.courses.domain.services.CourseService;
+import io.hhpulus.school.courses.domain.CourseService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 

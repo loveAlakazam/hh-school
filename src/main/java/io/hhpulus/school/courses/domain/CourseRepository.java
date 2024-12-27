@@ -22,6 +22,6 @@ public interface CourseRepository {
     Optional<CourseResponseDto> findEnableCourse(long id, LocalDate currentDate);
 
     // 신청가능한 강좌목록 조회
-    Page<CourseResponseDto> getEnableEnrollCourses (LocalDate currentDate, int page); //
+    Page<CourseResponseDto> getEnableEnrollCourses (LocalDate currentDate, int page);
 
 }

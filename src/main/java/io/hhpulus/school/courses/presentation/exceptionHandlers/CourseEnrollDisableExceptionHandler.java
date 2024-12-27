@@ -14,6 +14,6 @@ public class CourseEnrollDisableExceptionHandler {
     @ExceptionHandler(CourseEnrollDisableException.class)
     public ResponseEntity<ErrorResponseDto> handleCourseEnrollDisableException(CourseEnrollDisableException exception) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(COURSE_ENROLL_DISABLE, exception.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 }

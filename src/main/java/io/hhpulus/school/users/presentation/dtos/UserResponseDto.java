@@ -6,4 +6,12 @@ import io.hhpulus.school.users.domain.User;
 // - read-only.
 // - 데이터 변경을 막아주므로, data carrier 역할
 public record UserResponseDto(long id, String name) {
+
+    // 엔티티 변환
+    public User toEntity() {
+        User user = new User();
+        user.setId(id);
+        user.setName(name);
+        return user;
+    }
 }

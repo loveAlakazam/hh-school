@@ -6,6 +6,7 @@ import io.hhpulus.school.users.domain.User;
 import jakarta.persistence.*;
 
 @Entity
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "course_id"}))
 public class Enrollment extends BaseEntity {
     // 구성필드
     @Id
@@ -22,6 +23,11 @@ public class Enrollment extends BaseEntity {
 
     // 생성자
     public Enrollment() {
+    }
+
+    public Enrollment(User user, Course course) {
+        this.user = user;
+        this.course = course;
     }
 
     // getter

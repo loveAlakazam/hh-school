@@ -18,7 +18,7 @@ public class UserRepositoryImpl implements UserRepository{
 
     @Override
     public UserResponseDto createOrUpdate(String name) {
-        User user = userORMRepository.save(new User(name));
+        User user = userORMRepository.save(User.builder().name(name).build());
         return UserMapper.toResponseDto(user);
     }
 

@@ -12,13 +12,4 @@ public class UserMapper {
         String name = user.getName();
         return new UserResponseDto(id, name);
     }
-
-    // dto -> entity
-    public static User toEntity(UserResponseDto responseDto) {
-        if(responseDto == null) return null;
-
-        long id = responseDto.id();
-        String name = responseDto.name();
-        return new User(id, name);
-    }
 }

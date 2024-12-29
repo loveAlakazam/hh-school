@@ -11,10 +11,13 @@ spring:
     hibernate:
       # ddl-auto : update 는 테이블을 자동으로 생성/업데이트 하지만, 프로덕션 환경에서는 사용하지 않는다.
       ddl-auto: update
+      show_sql: true
+      format_sql: true
     properties:
       hibernate:
         # Mysql Hibernate Dialect 를 사용한다.
         dialect: org.hibernate.dialect.MySQL8Dialect
+
     # SQL 쿼리문 공개
     show-sql: true
 

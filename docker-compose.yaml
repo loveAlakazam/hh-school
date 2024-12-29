@@ -9,6 +9,8 @@ services:
       - "3306:3306"
     networks:
       - hhplus_school
+    volumes:
+      - ./src/main/resources/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci

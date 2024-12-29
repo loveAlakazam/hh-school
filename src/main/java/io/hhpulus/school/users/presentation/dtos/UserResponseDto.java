@@ -9,6 +9,6 @@ public record UserResponseDto(long id, String name) {
 
     // 엔티티 변환
     public User toEntity() {
-        return new User(id, name);
+        return User.builder().id(id).name(name).build();
     }
 }

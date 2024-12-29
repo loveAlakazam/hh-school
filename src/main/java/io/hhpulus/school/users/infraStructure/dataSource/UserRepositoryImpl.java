@@ -4,12 +4,14 @@ import io.hhpulus.school.users.domain.User;
 import io.hhpulus.school.users.domain.UserRepository;
 import io.hhpulus.school.users.infraStructure.application.UserMapper;
 import io.hhpulus.school.users.presentation.dtos.UserResponseDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository{
+    @Autowired
     private final UserORMRepository userORMRepository;
 
     public UserRepositoryImpl(UserORMRepository userORMRepository) {

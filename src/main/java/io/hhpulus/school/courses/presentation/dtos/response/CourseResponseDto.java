@@ -8,20 +8,24 @@ import java.time.LocalDate;
 // read-only
 public record CourseResponseDto(
         long id, // 아이디
+
         String name, // 강의명
         String lecturerName, // 강사명
-        boolean enableEnroll, // 수강신청가능 여부
         LocalDate enrollStartDate, // 수강신청 시작날짜
-        LocalDate enrollEndDate // 수강신청 종료날짜
+        LocalDate enrollEndDate, // 수강신청 종료날짜
+        Integer currentEnrollments // 현재 신청자 수
 ) {
 
     public Course toEntity() {
-        Course course = new Course();
-        course.setId(id);
-        course.setName(this.name);
-        course.setLecturerName(this.lecturerName);
-        course.setEnrollStartDate(this.enrollStartDate);
-        course.setEnrollEndDate(this.enrollStartDate);
+        Course course = Course.builder()
+                .id(id)
+                .name(name)
+                .lecturerName(lecturerName)
+                .enrollStartDate(enrollStartDate)
+                .enrollEndDate(enrollEndDate)
+                .currentEnrollments(currentEnrollments)
+                .build();
+
         return course;
     }
 }

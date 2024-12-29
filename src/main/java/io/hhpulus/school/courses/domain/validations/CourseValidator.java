@@ -4,23 +4,22 @@ import java.time.LocalDate;
 
 // 유효성 검사
 public interface CourseValidator {
-    int ENROLLMENT_MAXIMUM_DAYS = 364;
 
     String USER_ID_POSITIVE_NUMBER_VALIDATION_POLICY = "유저 아이디는 0보다 큰 양수여야 합니다.";
 
     String COURSE_ID_POSITIVE_NUMBER_VALIDATION_POLICY = "강좌 아이디는 0보다 큰 양수여야 합니다.";
 
-    String DAYS_POSITIVE_NUMBER_VALIDATION_POLICY = "수강신청 기간(일)은 0보다 큰 양수여야 합니다.";
-
     String COURSE_NAME_NOT_EMPTY_VALIDATION_POLICY = "강좌명은 빈공백이거나 null 을 허용하지 않습니다.";
 
     String LECTURER_NAME_NOT_EMPTY_VALIDATION_POLICY = "강연자명은 빈공백이거나 null 을 허용하지 않습니다.";
 
-    String ENROLLMENT_DAYS_MAXIMUM_VALIDATION_POLICY = "수강신청 기간(일)은 최대 " + ENROLLMENT_MAXIMUM_DAYS + "일 입니다.";
-
-    String ENROLL_START_DATE_IS_NOT_NULL = "수강 신청 시작기간은 null 을 허용하지 않습니다.";
+    String ENROLL_START_DATE_IS_NOT_NULL = "수강신청 시작날짜는 null 을 허용하지 않습니다.";
+    String ENROLL_END_DATE_IS_NOT_NULL = "수강신청 종료날짜는 null 을 허용하지 않습니다.";
+    String ENROLL_END_DATE_LATER_THAN_ENROLL_START_DATE = "수강신청 종료날짜는 수강신청 시작날짜보다 앞에 올 수 없습니다.";
 
     String PAGE_POSITIVE_NUMBER_VALIDATION_POLICY = "페이지는 0보다 큰 양수여야 합니다.";
+
+    String CURRENT_ENROLLMENTS_NUMBER_VALIDATION_POLICY = "현재 수강신청 인원수는 0 보다 큰 양수여야 합니다.";
 
 
     // 유효성 검사 로직
@@ -53,20 +52,21 @@ public interface CourseValidator {
         }
     }
 
-    static void checkDays(int days) throws IllegalArgumentException{
-        // 수강신청기간(일)은 1~364일 까지 허용한다.
-        if (days <= 0)
-            throw new IllegalArgumentException(DAYS_POSITIVE_NUMBER_VALIDATION_POLICY);
-
-        if (days > ENROLLMENT_MAXIMUM_DAYS)
-            throw new IllegalArgumentException(ENROLLMENT_DAYS_MAXIMUM_VALIDATION_POLICY);
-    }
-
     static void checkEnrollStartDate(LocalDate enrollStartDate) throws IllegalArgumentException {
         // 수강신청시작날짜는 null 을 허용하지 않는다.
         if (enrollStartDate == null) {
             throw new IllegalArgumentException(ENROLL_START_DATE_IS_NOT_NULL);
         }
+    }
+    static void checkEnrollEndDate(LocalDate enrollStartDate, LocalDate enrollEndDate) throws IllegalArgumentException {
+        // 수강신청 종료 날짜는 null 을 허용하지 않는다.
+        if (enrollEndDate == null) {
+            throw new IllegalArgumentException(ENROLL_END_DATE_IS_NOT_NULL);
+        }
+
+        // 수강신청 종료날짜는 수강신청시작날짜보다 미래이다.
+        if (enrollEndDate.compareTo(enrollStartDate) > 0) return;
+        throw new IllegalArgumentException(ENROLL_END_DATE_LATER_THAN_ENROLL_START_DATE);
     }
 
     static void checkPage(int page) throws IllegalArgumentException {
@@ -74,5 +74,11 @@ public interface CourseValidator {
         if (page > 0) return;
 
         throw new IllegalArgumentException(PAGE_POSITIVE_NUMBER_VALIDATION_POLICY);
+    }
+
+    static void checkCurrentEnrollments (int currentEnrollments) throws IllegalArgumentException {
+        // 현재 강의신청 인원수는 0보다 큰 양수이다.
+        if(currentEnrollments > 0) return;
+        throw new IllegalArgumentException(CURRENT_ENROLLMENTS_NUMBER_VALIDATION_POLICY);
     }
 }

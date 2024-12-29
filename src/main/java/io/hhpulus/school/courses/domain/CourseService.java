@@ -13,7 +13,7 @@ public interface CourseService {
     CourseResponseDto createCourse(CreateCourseRequestDto requestDto); // 수강 생성
 
     // 수강 신청
-    void applyCourse(long userId, long courseId); // 특강신청 (선착순 신청)
+    int applyCourse(long userId, long courseId); // 특강신청 (선착순 신청)
 
     // 현재 신청가능 강좌목록 조회 (offset pagination)
     Page<CourseResponseDto> getEnableCourses(int page);
@@ -25,17 +25,15 @@ public interface CourseService {
     // todo: Pagination 을 적용하여 Page 로 리턴하도록 리팩터링
     List<EnrolledCourseResponseDto> getEnrollFinishedCourses(long userId);
 
-    // 수강신청자 정원이 최대정원인지 확인
-    void isMaximumNumber(long courseId);
 
     // 현재날짜를 기준으로 신청이 가능한 강좌인지
     void isAvailableEnrollCourseNow(long courseId);
 
     // 유효 강좌 검증
-    void isAvailableCourse(long courseId);
+    Course isAvailableCourse(long courseId);
 
     // 유효 유저 검증
-    void isAvailableUser(long userId);
+    User isAvailableUser(long userId);
 
     // 이미 신청완료된 강죄인지
     void isAlreadyEnrolledCourse(long userId, long courseId);

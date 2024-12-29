@@ -5,6 +5,7 @@ import io.hhpulus.school.enrollments.domain.Enrollment;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.List;
 @Setter
 @Getter
 @Entity
+@NoArgsConstructor
 public class User extends BaseEntity {
     // 구성필드
     @Id

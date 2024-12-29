@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface EnrollmentRepository {
     // 수강신청 등록
-    public void create(User rawUserEntity, Course rawCourseEntity);
+    public void create(Enrollment enrollment);
 
     // 수강신청됐는지 확인
     Optional<EnrollmentResponseDto> findByUserIdAndCourseId(long userId, long courseId);

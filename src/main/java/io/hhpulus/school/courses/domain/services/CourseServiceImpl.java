@@ -6,9 +6,11 @@ import io.hhpulus.school.courses.domain.CourseService;
 import io.hhpulus.school.courses.domain.exceptions.CourseEnrollDisableException;
 import io.hhpulus.school.courses.domain.exceptions.CourseNotFoundException;
 import io.hhpulus.school.courses.domain.validations.CourseValidator;
+import io.hhpulus.school.courses.infraStructure.applications.CourseMapper;
 import io.hhpulus.school.courses.presentation.dtos.request.CreateCourseRequestDto;
 import io.hhpulus.school.courses.presentation.dtos.request.UpdateCourseRequestDto;
 import io.hhpulus.school.courses.presentation.dtos.response.CourseResponseDto;
+import io.hhpulus.school.enrollments.domain.Enrollment;
 import io.hhpulus.school.enrollments.domain.EnrollmentRepository;
 import io.hhpulus.school.enrollments.presentation.dtos.EnrolledCourseResponseDto;
 import io.hhpulus.school.enrollments.presentation.dtos.EnrollmentResponseDto;
@@ -17,13 +19,16 @@ import io.hhpulus.school.users.domain.UserRepository;
 import io.hhpulus.school.users.domain.exceptions.UserNotFoundException;
 import io.hhpulus.school.users.infraStructure.application.UserMapper;
 import io.hhpulus.school.users.presentation.dtos.UserResponseDto;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static io.hhpulus.school.courses.domain.constants.CourseConstants.MAXIMUM_COURSE_STUDENTS;
 import static io.hhpulus.school.courses.domain.exceptions.CourseErrorMessage.*;
 import static io.hhpulus.school.users.domain.exceptions.UserErrorMessages.USER_ID_DOES_NOT_EXISTS;
 
@@ -45,9 +50,12 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public void applyCourse(long userId, long courseId) {
-        // 유저아이디 정보 조회
-        this.isAvailableUser(userId);
+    public int applyCourse(long userId, long courseId) {
+        // 유효한 유저인지 검증
+        User user = this.isAvailableUser(userId);
+
+        // 유효한 강의인지 검증
+        Course course = this.isAvailableCourse(courseId);
 
         // 유저가 이미 신청한 강의인지 확인
         this.isAlreadyEnrolledCourse(userId, courseId);
@@ -56,9 +64,20 @@ public class CourseServiceImpl implements CourseService {
         this.isAvailableEnrollCourseNow(courseId);
 
         // 강의신청
-        User user = this.userRepository.findById(userId).get().toEntity();
-        Course course = this.courseRepository.findById(courseId).get().toEntity();
-        this.enrollmentRepository.create(user, course);
+        Enrollment enrollment = Enrollment.builder().course(course).user(user).build();
+        this.enrollmentRepository.create(enrollment);
+
+        // currentEnrollments  +1 업데이트
+        UpdateCourseRequestDto requestDto = new UpdateCourseRequestDto(
+                courseId,
+                null,
+                null,
+                null,
+                null,
+                course.getCurrentEnrollments() + 1
+        );
+        CourseResponseDto result = this.updateCourseInfo(requestDto);
+        return result.currentEnrollments();
     }
 
     @Override
@@ -72,13 +91,36 @@ public class CourseServiceImpl implements CourseService {
         return list;
     }
 
+    @Transactional
     @Override
     public CourseResponseDto updateCourseInfo(UpdateCourseRequestDto requestDto) {
         // 목적: 강좌정보 수정
         long courseId = requestDto.id();
-        this.isAvailableCourse(courseId);
+        Course course = this.isAvailableCourse(courseId);
 
-        return this.courseRepository.update(requestDto);
+        // 부분수정할 수 있도록 course(기존데이터) 와 requestDto와 비교하여 update
+        if(requestDto.name() != null) {
+           course.setName(requestDto.name());
+        }
+        if(requestDto.lecturerName() != null) {
+            course.setLecturerName(requestDto.lecturerName());
+        }
+        if(requestDto.enrollStartDate() != null) {
+            course.setEnrollStartDate(requestDto.enrollStartDate());
+        }
+        if(requestDto.enrollEndDate() != null) {
+            course.setEnrollEndDate(requestDto.enrollEndDate());
+        }
+        if(requestDto.currentEnrollments() != null) {
+            course.setCurrentEnrollments(requestDto.currentEnrollments());
+        }
+
+        // 수정
+        this.courseRepository.update(course);
+
+        // 수정후 조회
+        return CourseMapper.toResponseDto(course);
+
     }
 
     @Override
@@ -87,42 +129,25 @@ public class CourseServiceImpl implements CourseService {
         // 유효성 검사
         isAvailableUser(userId);
 
-        List<EnrolledCourseResponseDto> list = this.enrollmentRepository.getEnrolledCourses(userId);
+        List<EnrolledCourseResponseDto> list = enrollmentRepository.getEnrolledCourses(userId);
         return list;
     }
 
-    @Override
-    public void isMaximumNumber(long courseId) {
-        // 목적: 수강신청자 정원이 최대정원인지 확인
-        // 유효성검사
-        CourseValidator.checkCourseId(courseId);
-
-        // todo
-    }
 
     @Override
     public void isAvailableEnrollCourseNow(long courseId) {
         // 목적: 현재 기준으로 신청이 가능한 강좌인지 확인
         this.isAvailableCourse(courseId);
 
-        // 오늘을 기준으로 신청이 가능한지 확인
-        Optional<CourseResponseDto> course = this.courseRepository.findEnableCourse(courseId, LocalDate.now());
-        if(course.isEmpty()) {
-            throw new CourseEnrollDisableException(COURSE_ENROLL_DATE_EXPIRED);
-        }
-
-        // 강의 신청상태 확인
-        boolean isEnableEnroll = course.get().enableEnroll();
-        if (!isEnableEnroll) {
+        // 오늘을 기준으로 신청이 불가능한가?
+        Optional<CourseResponseDto> availableCourse = this.courseRepository.findEnableCourse(courseId, LocalDate.now());
+        if(availableCourse.isEmpty()) {
             throw new CourseEnrollDisableException(COURSE_ENROLL_DISABLED);
         }
-
-        // 정원수가 최대정원인지 확인
-        this.isMaximumNumber(courseId);
     }
 
     @Override
-    public void isAvailableCourse(long courseId) {
+    public Course isAvailableCourse(long courseId) {
         // 목적: 유효한 강의인지 확인
         // 유효성 검사
         CourseValidator.checkCourseId(courseId);
@@ -132,10 +157,11 @@ public class CourseServiceImpl implements CourseService {
         if(course.isEmpty()) {
             throw new CourseNotFoundException(COURSE_ID_DOES_NOT_EXISTS);
         }
+        return course.get().toEntity();
     }
 
     @Override
-    public void isAvailableUser(long userId) {
+    public User isAvailableUser(long userId) {
         // 목적: 유효한 유저인지 확인
         //유효성검사
         CourseValidator.checkUserId(userId);
@@ -144,14 +170,12 @@ public class CourseServiceImpl implements CourseService {
         if (user.isEmpty()) {
             throw new UserNotFoundException(USER_ID_DOES_NOT_EXISTS);
         }
+        return user.get().toEntity();
     }
 
     @Override
     public void isAlreadyEnrolledCourse(long userId, long courseId) {
         // 목적: 이미 신청이 완료된 강좌인지 확인
-        // 유효성 검사
-        CourseValidator.checkUserId(userId);
-        CourseValidator.checkCourseId(courseId);
 
         // 이미 신청이 완료됐다면 enrollment 결과에 존재한다.
         Optional<EnrollmentResponseDto> enrollment = this.enrollmentRepository.findByUserIdAndCourseId(userId, courseId);

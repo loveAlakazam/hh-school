@@ -4,16 +4,18 @@ import io.hhpulus.school.courses.presentation.dtos.request.CreateCourseRequestDt
 import io.hhpulus.school.courses.presentation.dtos.request.UpdateCourseRequestDto;
 import io.hhpulus.school.courses.presentation.dtos.response.CourseResponseDto;
 import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.Optional;
+
 
 public interface CourseRepository {
     // 강좌 등록
     CourseResponseDto create(CreateCourseRequestDto requestDto);
 
     // 강좌 정보 수정
-    CourseResponseDto update(UpdateCourseRequestDto requestDto);
+    void update(Course updatedCourse);
 
     // 단건 강좌 조회
     Optional<CourseResponseDto> findById(long id);

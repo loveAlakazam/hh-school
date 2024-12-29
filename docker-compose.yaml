@@ -1,0 +1,20 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: hhplus_school
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_USER_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "3306:3306"
+    networks:
+      - hhplus_school
+    volumes:
+      - ./src/main/resources/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+
+networks:
+  hhplus_school:
+    driver: bridge

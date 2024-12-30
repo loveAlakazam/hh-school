@@ -25,6 +25,8 @@ public interface CourseORMRepository extends JpaRepository<Course,Long> {
     )
     Page<Course> findEnableEnrollCourses(@Param("currentDate") LocalDate currentDate, Pageable pageable );
 
+    // applyCourse에서 isAvailableEnrollCourseNow 에 해당 조회를 막는다.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(" SELECT c FROM Course c " +
             " WHERE :currentDate BETWEEN c.enrollStartDate AND c.enrollEndDate " +
             " AND c.currentEnrollments < " + MAXIMUM_COURSE_STUDENTS + // 수강신청인원 30명 미만
@@ -32,7 +34,9 @@ public interface CourseORMRepository extends JpaRepository<Course,Long> {
     )
     Optional<Course> findEnableEnrollCourse(@Param("courseId") long courseId, @Param("currentDate") LocalDate currentDate);
 
-    @Transactional
+
+    // applyCourse 의 currentEnrollments 업데이트
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Modifying
     @Query(" UPDATE Course c SET " +
         " c.name = :name ," +
@@ -50,6 +54,7 @@ public interface CourseORMRepository extends JpaRepository<Course,Long> {
       @Param("currentEnrollments") int currentEnrollments
     );
 
+    // 비관적 락을 사용하여 다른 트랜잭션이 읽기/쓰기 접근을 못하도록 막는다.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT c FROM Course c WHERE c.id = :id")
     Optional<Course> findByIdWithLock(@Param("id") long id);

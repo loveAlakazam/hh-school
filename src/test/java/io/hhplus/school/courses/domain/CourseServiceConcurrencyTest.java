@@ -6,6 +6,7 @@ import io.hhpulus.school.courses.domain.Course;
 import io.hhpulus.school.courses.domain.CourseRepository;
 import io.hhpulus.school.courses.domain.CourseService;
 import io.hhpulus.school.courses.domain.services.CourseServiceImpl;
+import io.hhpulus.school.courses.presentation.dtos.request.CreateCourseRequestDto;
 import io.hhpulus.school.courses.presentation.dtos.response.CourseResponseDto;
 import io.hhpulus.school.enrollments.domain.Enrollment;
 import io.hhpulus.school.enrollments.domain.EnrollmentRepository;
@@ -29,6 +30,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,11 +38,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.hhpulus.school.courses.domain.constants.CourseConstants.MAXIMUM_COURSE_STUDENTS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = HHPlusSchoolMainApplication.class) // Spring Boot 테스트 컨텍스트 사용
-@Transactional // 테스트후 데이터 롤백
 public class CourseServiceConcurrencyTest {
     @Autowired
     private CourseService courseService;
@@ -65,12 +65,6 @@ public class CourseServiceConcurrencyTest {
         userRepository.deleteAll();
         courseRepository.deleteAll();
         userIds = new ArrayList<>();
-
-        // 40명의 유저 생성
-        createTestUsers(USER_THREAD_POOL_COUNT);
-
-        // 정원 30명 강의 1개 생성
-        createTestCourse(MAXIMUM_COURSE_STUDENTS);
     }
     @AfterEach
     void tearDown() {
@@ -79,15 +73,15 @@ public class CourseServiceConcurrencyTest {
 
 
     private void createTestCourse(int maxCapacity) {
-        Course course = Course.builder()
+        CreateCourseRequestDto courseRequestDto = CreateCourseRequestDto
+                .builder()
                 .name("Test Course")
                 .lecturerName("Test Lecturer")
                 .enrollStartDate(LocalDate.now())
                 .enrollEndDate(LocalDate.now().plusDays(7))
-                .currentEnrollments(maxCapacity) // 강좌 정원 필드 추가 필요
                 .build();
-        course = courseRepository.save(course);
-        assertNotNull(course.getId());
+        CourseResponseDto course = courseRepository.create(courseRequestDto);
+        assertNotNull(course.id());
     }
 
     private void createTestUsers(int count) {
@@ -106,6 +100,11 @@ public class CourseServiceConcurrencyTest {
     void testConcurrentEnrollmentsOnlyAllowingFirst30() throws InterruptedException {
         // given
         int numberOfThreads = USER_THREAD_POOL_COUNT;
+        // 유저 데이터 40개 생성
+        createTestUsers(numberOfThreads);
+
+        // 정원 30명짜리 강의 1개 생성
+        createTestCourse(MAXIMUM_COURSE_STUDENTS);
 
         CountDownLatch latch = new CountDownLatch(numberOfThreads); // 40개의 스레드풀 생성
         AtomicInteger successCount = new AtomicInteger(0); // 성공카운트
@@ -113,37 +112,39 @@ public class CourseServiceConcurrencyTest {
 
         // when
         // 비동기 요청시작
-        ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
-        for(int i=0 ; i< 40; i++) {
-            long userId = (i + 1);
-            executor.submit(() -> {
-                try {
-                    courseService.applyCourse(userId, courseId); // 독립된 트랜잭션
-                    successCount.incrementAndGet();
-                } catch (Exception e) {
-                    failCount.incrementAndGet();
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-
-        latch.await(10, TimeUnit.SECONDS); // 모든 쓰레드가 끝날 때까지 대기
-//        executor.shutdown(); // 작업완료후 ExecutorService 를 종료한다.
-
-        //        for (long userId : userIds) {
-//            executor.execute(() -> {
+//        ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
+//        for(int i=0 ; i< 40; i++) {
+//            long userId = (i + 1);
+//            executor.submit(() -> {
 //                try {
 //                    courseService.applyCourse(userId, courseId); // 독립된 트랜잭션
 //                    successCount.incrementAndGet();
 //                } catch (Exception e) {
-//                    // 실패 시 무시
 //                    failCount.incrementAndGet();
 //                } finally {
 //                    latch.countDown();
 //                }
 //            });
 //        }
+
+
+
+        ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
+        for (long userId : userIds) {
+            executor.execute(() -> {
+                try {
+                    courseService.applyCourse(userId, courseId); // 독립된 트랜잭션
+                    successCount.incrementAndGet();
+                } catch (Exception e) {
+                    // 실패 시 무시
+                    failCount.incrementAndGet();
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+        latch.await(); // 모든 쓰레드가 끝날 때까지 대기
+        executor.shutdown(); // 작업완료후 ExecutorService 를 종료한다.
 
         // then
         assertEquals(MAXIMUM_COURSE_STUDENTS, successCount.get(), "유저 30명은 성공한다.");
@@ -156,6 +157,11 @@ public class CourseServiceConcurrencyTest {
     @DisplayName("동일한 유저가 동일강의를 5번 수강신청을 요청했을 때 딱 한번만 성공한다")
     void testSameUserCannotEnrollMultipleTimes() throws InterruptedException {
         // Given
+        // 유저 데이터 1개 생성
+        createTestUsers(1);
+
+        // 정원 30명짜리 강의 1개 생성
+        createTestCourse(MAXIMUM_COURSE_STUDENTS);
         long userId = 1L; // 1번유저
         CountDownLatch latch = new CountDownLatch(5); // 동일한 유저가 5번 요청
 

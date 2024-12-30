@@ -29,7 +29,10 @@ public interface EnrollmentORMRepository extends JpaRepository<Enrollment, Long>
     List<EnrolledCourseProjection> getEnrolledCourses(@Param("userId") long userId);
 
 
+    // applyCourse의  isAlreadyEnrollmentCourse 에 있음.
+    // 비관적락을 사용하여 데이터를 읽는순간부터 락을 걸어서 다른 스레드의 읽기/쓰기 트랜잭션을 수행하지 못하도록 막는다.
     // userId, courseId 로 단건의 enrollment 조회
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(
             "SELECT e " +
             "FROM Enrollment e " +
@@ -41,16 +44,4 @@ public interface EnrollmentORMRepository extends JpaRepository<Enrollment, Long>
     Optional<Enrollment> findEnrollmentByUserIDAndCourseId(@Param("userId") long userId, @Param("courseId") long courseId);
 
 
-    @Query(
-            "SELECT e FROM Enrollment e " +
-                "JOIN e.user u " +
-                "JOIN e.course c " +
-            "WHERE u.id = :userId AND c.id = :courseId "
-    )
-    Optional<Enrollment> findByUserIdAndCourseIdWithLock(@Param("userId") long userId, @Param("courseId") long courseId);
-
-    // 비관적락을 사용하여 데이터를 읽는순간부터 락을 걸어서 다른 스레드의 읽기/쓰기 트랜잭션을 수행하지 못하도록 막는다.
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT e FROM Enrollment e WHERE e.id = :enrollmentId")
-    Optional<Enrollment> findByIdWithLock(@Param("enrollmentId") long enrollmentId);
 }

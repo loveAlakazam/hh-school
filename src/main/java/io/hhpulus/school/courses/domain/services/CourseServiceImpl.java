@@ -46,13 +46,14 @@ public class CourseServiceImpl implements CourseService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     @Override
     public CourseResponseDto createCourse(CreateCourseRequestDto requestDto) {
         return courseRepository.create(requestDto);
     }
 
-    @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Override
     public int applyCourse(long userId, long courseId) {
         // 유효한 유저인지 검증
         User user = this.isAvailableUser(userId);
@@ -83,6 +84,7 @@ public class CourseServiceImpl implements CourseService {
         return result.currentEnrollments();
     }
 
+    @Transactional
     @Override
     public Page<CourseResponseDto> getEnableCourses(int page) {
         // 목적: 현재 신청 가능한 강좌 목록 조회
@@ -94,6 +96,7 @@ public class CourseServiceImpl implements CourseService {
         return list;
     }
 
+    @Transactional
     @Override
     public CourseResponseDto updateCourseInfo(UpdateCourseRequestDto requestDto) {
         // 목적: 강좌정보 수정
@@ -125,6 +128,7 @@ public class CourseServiceImpl implements CourseService {
 
     }
 
+    @Transactional
     @Override
     public List<EnrolledCourseResponseDto> getEnrollFinishedCourses(long userId) {
         // 목적: 특정 userId로 수강신청이 완료된 강좌 목록 조회
@@ -136,6 +140,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
 
+    @Transactional
     @Override
     public void isAvailableEnrollCourseNow(long courseId) {
         // 목적: 현재 기준으로 신청이 가능한 강좌인지 확인
@@ -146,6 +151,7 @@ public class CourseServiceImpl implements CourseService {
         }
     }
 
+    @Transactional
     @Override
     public Course isAvailableCourse(long courseId) {
         // 목적: 유효한 강의인지 확인
@@ -161,6 +167,8 @@ public class CourseServiceImpl implements CourseService {
         return course.get().toEntity();
     }
 
+
+    @Transactional
     @Override
     public User isAvailableUser(long userId) {
         // 목적: 유효한 유저인지 확인
@@ -174,6 +182,7 @@ public class CourseServiceImpl implements CourseService {
         return user.get().toEntity();
     }
 
+    @Transactional
     @Override
     public void isAlreadyEnrolledCourse(long userId, long courseId) {
         // 목적: 이미 신청이 완료된 강좌인지 확인

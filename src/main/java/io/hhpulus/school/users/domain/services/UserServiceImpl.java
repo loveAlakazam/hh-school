@@ -5,6 +5,7 @@ import io.hhpulus.school.users.domain.exceptions.UserAlreadyExistsException;
 import io.hhpulus.school.users.domain.exceptions.UserNotFoundException;
 import io.hhpulus.school.users.presentation.dtos.UserResponseDto;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -20,6 +21,7 @@ public class UserServiceImpl implements  UserService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     @Override
     public UserResponseDto createNewUser(String name) {
         // name 으로 중복유저 체크
@@ -41,6 +43,7 @@ public class UserServiceImpl implements  UserService {
         return user;
     }
 
+    @Transactional
     @Override
     public UserResponseDto updateUserInfo(long id, String name) {
         // 유저조회

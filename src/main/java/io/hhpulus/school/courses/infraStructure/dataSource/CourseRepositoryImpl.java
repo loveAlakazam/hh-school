@@ -9,7 +9,6 @@ import io.hhpulus.school.courses.presentation.dtos.request.UpdateCourseRequestDt
 import io.hhpulus.school.courses.presentation.dtos.response.CourseResponseDto;
 import io.hhpulus.school.users.presentation.dtos.UpdateUserInfoRequestDto;
 import jakarta.persistence.LockModeType;
-import jakarta.transaction.Transactional;
 import org.slf4j.LoggerFactory;
 import org.slf4j.LoggerFactoryFriend;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +17,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -60,11 +61,11 @@ public class CourseRepositoryImpl implements CourseRepository {
 
 
     // 강좌 단건 조회
-    // 수강신청할때 동일한 강좌를 다른트랜잭션이 읽기/쓰기 접근을 할 수 없게끔 락을건다.
     @Override
     public Optional<CourseResponseDto> findById(long id) {
-//        return courseORMRepository.findById(id).map(CourseMapper::toResponseDto);
+        // isAvailableCourse 과정에서도 동시성제어 - 조회시 락을 사용한다.
         return courseORMRepository.findByIdWithLock(id).map(CourseMapper::toResponseDto);
+//        return courseORMRepository.findById(id).map(CourseMapper::toResponseDto);
     }
 
 

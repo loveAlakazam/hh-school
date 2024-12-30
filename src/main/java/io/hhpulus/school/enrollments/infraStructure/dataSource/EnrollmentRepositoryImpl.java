@@ -6,7 +6,10 @@ import io.hhpulus.school.enrollments.domain.EnrollmentRepository;
 import io.hhpulus.school.enrollments.infraStructure.applications.mappers.EnrollmentMapper;
 import io.hhpulus.school.enrollments.presentation.dtos.EnrolledCourseResponseDto;
 import io.hhpulus.school.enrollments.presentation.dtos.EnrollmentResponseDto;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,15 +34,6 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
         return this.enrollmentORMRepository.findEnrollmentByUserIDAndCourseId(userId, courseId).map(EnrollmentMapper::toResponseDto);
     }
 
-    @Override
-    public Optional<EnrollmentResponseDto> findByUserIdAndCourseIdWithLock(long userId, long courseId) {
-        return this.enrollmentORMRepository.findByUserIdAndCourseIdWithLock(userId, courseId).map(EnrollmentMapper::toResponseDto);
-    }
-
-    @Override
-    public Optional<Enrollment> findByIdWithLock(long enrollmentId) {
-        return this.enrollmentORMRepository.findByIdWithLock(enrollmentId);
-    }
 
     // 수강신청 완료 강의 목록 조회
     @Override

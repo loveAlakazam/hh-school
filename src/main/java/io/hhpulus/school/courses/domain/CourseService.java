@@ -6,6 +6,8 @@ import io.hhpulus.school.courses.presentation.dtos.response.CourseResponseDto;
 import io.hhpulus.school.enrollments.presentation.dtos.EnrolledCourseResponseDto;
 import io.hhpulus.school.users.domain.User;
 import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

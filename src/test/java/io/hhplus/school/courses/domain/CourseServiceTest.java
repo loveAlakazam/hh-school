@@ -32,6 +32,7 @@ import org.springframework.data.domain.PageRequest;
 
 import javax.swing.text.html.Option;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -542,7 +543,7 @@ public class CourseServiceTest {
             // then
             assertEquals(updatedCourseDto.currentEnrollments(), result);
             verify(userRepository, times(1)).findById(userId);
-            verify(courseRepository, times(3)).findById(courseId); // isAvailableCourse 를 총 3번 호출
+            verify(courseRepository, times(2)).findById(courseId); // isAvailableCourse 를 총 2s번 호출
             verify(enrollmentRepository, times(1)).findByUserIdAndCourseId(userId, courseId);
             verify(courseRepository, times(1)).findEnableCourse(courseId, now);
             verify(enrollmentRepository, times(1)).create(any(Enrollment.class));
@@ -613,7 +614,7 @@ public class CourseServiceTest {
                 long id = i;
                 String courseName = "신청강좌" + i;
                 String lecturerName = "강연자" + i;
-                LocalDate createdAt = LocalDate.of(2024, 12, 23);
+                LocalDateTime createdAt = LocalDateTime.of(2024, 12, 23, 0, 0);
                 EnrolledCourseResponseDto enrolledCourse = new EnrolledCourseResponseDto(id, courseName, lecturerName, createdAt.plusDays(i));
                 expectedEnrolledCourses.add(enrolledCourse);
             }

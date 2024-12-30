@@ -15,6 +15,13 @@ public interface EnrollmentRepository {
     // 수강신청됐는지 확인
     Optional<EnrollmentResponseDto> findByUserIdAndCourseId(long userId, long courseId);
 
+    // 락을 활용하여 수강신청됐는지확인
+    Optional<EnrollmentResponseDto> findByUserIdAndCourseIdWithLock(long userId, long courseId);
+
+    Optional<Enrollment> findByIdWithLock(long enrollmentId);
+
     // 특정 userId로 수강신청 완료된 강의 목록 조회
     List<EnrolledCourseResponseDto> getEnrolledCourses(long userId);
+
+    void deleteAll();
 }

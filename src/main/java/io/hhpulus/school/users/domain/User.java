@@ -11,9 +11,10 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "user")
 @Setter
 @Getter
-@Entity
 @NoArgsConstructor
 public class User extends BaseEntity {
     // 구성필드

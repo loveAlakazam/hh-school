@@ -12,4 +12,8 @@ public interface UserRepository {
     Optional<UserResponseDto> findById(long id);
 
     Optional<UserResponseDto> findByName(String name);
+
+    User save(User user);
+
+    void deleteAll();
 }

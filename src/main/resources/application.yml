@@ -17,7 +17,13 @@ spring:
       hibernate:
         # Mysql Hibernate Dialect 를 사용한다.
         dialect: org.hibernate.dialect.MySQL8Dialect
-
+        # Hibernate 락 쿼리로그 설정하기
+      hibernate.connection.isolation: 8 # SERIALIZABLE
+    logging:
+      level:
+        org.hibernate.SQL: DEBUG # Hibernate 실행 SQL 로그: Hibernate 가 실행하는 실제 SQL 쿼리로그를 출력
+        org.hibernate.type.descriptor.sql: TRACE # SQL 파라미터 바인딩로그: SQL 쿼리에 사용되는 파라미터값 출력. 디버깅에 유용
+        org.hibernate.engine.internal: DEBUG # Hibernate 내부동작로그 : Hibernate 내부 트랜잭션처리와 락관련 디버깅에 유용
     # SQL 쿼리문 공개
     show-sql: true
 
@@ -26,6 +32,9 @@ spring:
     serialization:
       fail-on-empty-beans: false
 
+  # Spring 트랜잭션에서 사용되는 기본 격리수준을 설정함.
+  # @Transactional 어노테이션에도 별도로 격리수준을 명시하지 않은 경우 기본값으로 사용됨
+  #
   # transaction: 트랜잭션 격리 수준을 사용
   #   - READ_COMMITED : 커밋된 데이터만을 읽음(Dirty Read 방지)
   #       - Dirty Read : 한 트랜잭션이 아직 커밋되지 않은 다른 트랜잭션의 변경사항을 읽는 상황을 의미.

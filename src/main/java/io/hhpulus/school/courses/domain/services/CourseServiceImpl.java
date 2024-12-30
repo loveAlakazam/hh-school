@@ -19,9 +19,11 @@ import io.hhpulus.school.users.domain.UserRepository;
 import io.hhpulus.school.users.domain.exceptions.UserNotFoundException;
 import io.hhpulus.school.users.infraStructure.application.UserMapper;
 import io.hhpulus.school.users.presentation.dtos.UserResponseDto;
-import jakarta.transaction.Transactional;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -50,11 +52,12 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public int applyCourse(long userId, long courseId) {
         // 유효한 유저인지 검증
         User user = this.isAvailableUser(userId);
 
-        // 유효한 강의인지 검증
+        // 유효한 강의인지 검증 (행을잠근다)
         Course course = this.isAvailableCourse(courseId);
 
         // 유저가 이미 신청한 강의인지 확인
@@ -91,7 +94,6 @@ public class CourseServiceImpl implements CourseService {
         return list;
     }
 
-    @Transactional
     @Override
     public CourseResponseDto updateCourseInfo(UpdateCourseRequestDto requestDto) {
         // 목적: 강좌정보 수정
@@ -137,8 +139,6 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public void isAvailableEnrollCourseNow(long courseId) {
         // 목적: 현재 기준으로 신청이 가능한 강좌인지 확인
-        this.isAvailableCourse(courseId);
-
         // 오늘을 기준으로 신청이 불가능한가?
         Optional<CourseResponseDto> availableCourse = this.courseRepository.findEnableCourse(courseId, LocalDate.now());
         if(availableCourse.isEmpty()) {
@@ -154,6 +154,7 @@ public class CourseServiceImpl implements CourseService {
 
         // 존재한지
         Optional<CourseResponseDto> course = this.courseRepository.findById(courseId);
+
         if(course.isEmpty()) {
             throw new CourseNotFoundException(COURSE_ID_DOES_NOT_EXISTS);
         }
@@ -178,7 +179,8 @@ public class CourseServiceImpl implements CourseService {
         // 목적: 이미 신청이 완료된 강좌인지 확인
 
         // 이미 신청이 완료됐다면 enrollment 결과에 존재한다.
-        Optional<EnrollmentResponseDto> enrollment = this.enrollmentRepository.findByUserIdAndCourseId(userId, courseId);
+         Optional<EnrollmentResponseDto> enrollment = this.enrollmentRepository.findByUserIdAndCourseId(userId, courseId);
+
         if(enrollment.isPresent()) {
             throw new CourseEnrollDisableException(COURSE_ALREADY_ENROLLED);
         }

@@ -8,6 +8,7 @@ import io.hhpulus.school.courses.presentation.dtos.request.CreateCourseRequestDt
 import io.hhpulus.school.courses.presentation.dtos.request.UpdateCourseRequestDto;
 import io.hhpulus.school.courses.presentation.dtos.response.CourseResponseDto;
 import io.hhpulus.school.users.presentation.dtos.UpdateUserInfoRequestDto;
+import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import org.slf4j.LoggerFactory;
 import org.slf4j.LoggerFactoryFriend;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -36,7 +38,6 @@ public class CourseRepositoryImpl implements CourseRepository {
 
 
     // 강좌 데이터 생성
-    @Transactional
     @Override
     public CourseResponseDto create(CreateCourseRequestDto requestDto) {
         Course course = courseORMRepository.save(requestDto.toEntity());
@@ -44,7 +45,6 @@ public class CourseRepositoryImpl implements CourseRepository {
     }
 
     // 강좌 정보 업데이트
-    @Transactional
     @Override
     public void update(Course updatedCourse) {
         // save로 하려고했으나 null이 나와서... 다른 방법을...
@@ -60,10 +60,13 @@ public class CourseRepositoryImpl implements CourseRepository {
 
 
     // 강좌 단건 조회
+    // 수강신청할때 동일한 강좌를 다른트랜잭션이 읽기/쓰기 접근을 할 수 없게끔 락을건다.
     @Override
     public Optional<CourseResponseDto> findById(long id) {
-        return courseORMRepository.findById(id).map(CourseMapper::toResponseDto);
+//        return courseORMRepository.findById(id).map(CourseMapper::toResponseDto);
+        return courseORMRepository.findByIdWithLock(id).map(CourseMapper::toResponseDto);
     }
+
 
     // 신청가능한 강좌 단건 조회
     @Override
@@ -77,5 +80,15 @@ public class CourseRepositoryImpl implements CourseRepository {
     public Page<CourseResponseDto> getEnableEnrollCourses(LocalDate currentDate, int page) {
         Pageable pageable = PageRequest.of(page -1 , DEFAULT_PAGINATION_SIZE);
         return courseORMRepository.findEnableEnrollCourses(currentDate, pageable).map(CourseMapper::toResponseDto);
+    }
+
+    @Override
+    public Course save(Course course) {
+        return courseORMRepository.save(course);
+    }
+
+    @Override
+    public void deleteAll() {
+        courseORMRepository.deleteAll();
     }
 }

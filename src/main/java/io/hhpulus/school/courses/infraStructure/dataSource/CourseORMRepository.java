@@ -1,11 +1,14 @@
 package io.hhpulus.school.courses.infraStructure.dataSource;
 
 import io.hhpulus.school.courses.domain.Course;
+import io.hhpulus.school.courses.presentation.dtos.response.CourseResponseDto;
+import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -46,4 +49,8 @@ public interface CourseORMRepository extends JpaRepository<Course,Long> {
       @Param("enrollEndDate") LocalDate enrollEndDate,
       @Param("currentEnrollments") int currentEnrollments
     );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT c FROM Course c WHERE c.id = :id")
+    Optional<Course> findByIdWithLock(@Param("id") long id);
 }

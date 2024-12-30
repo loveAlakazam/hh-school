@@ -26,11 +26,19 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
     }
 
 
-    // userId와 courseId 로 enrollment 단건 조회
-    // 한사람이 동일한 강의를 중복으로 듣는것을 막고자,  (userId, courseId) 를 enrollment 의 복합키로 하였습니다.
     @Override
     public Optional<EnrollmentResponseDto> findByUserIdAndCourseId(long userId, long courseId) {
         return this.enrollmentORMRepository.findEnrollmentByUserIDAndCourseId(userId, courseId).map(EnrollmentMapper::toResponseDto);
+    }
+
+    @Override
+    public Optional<EnrollmentResponseDto> findByUserIdAndCourseIdWithLock(long userId, long courseId) {
+        return this.enrollmentORMRepository.findByUserIdAndCourseIdWithLock(userId, courseId).map(EnrollmentMapper::toResponseDto);
+    }
+
+    @Override
+    public Optional<Enrollment> findByIdWithLock(long enrollmentId) {
+        return this.enrollmentORMRepository.findByIdWithLock(enrollmentId);
     }
 
     // 수강신청 완료 강의 목록 조회
@@ -44,5 +52,10 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
                 p.getLecturerName(),
                 p.getCreatedAt()
         )).toList();
+    }
+
+    @Override
+    public void deleteAll() {
+        enrollmentORMRepository.deleteAll();
     }
 }
